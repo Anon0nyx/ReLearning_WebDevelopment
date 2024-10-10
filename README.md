@@ -39,10 +39,6 @@ After a significant break from web development, I've decided to dive back in and
 
 If you have suggestions or improvements, feel free to open an issue or submit a pull request. Contributions are welcome!
 
-## Contact
-
-You can reach me at your-email@example.com or connect with me on LinkedIn.
-
 ---
 
 Thank you for visiting my repository. Happy coding!
