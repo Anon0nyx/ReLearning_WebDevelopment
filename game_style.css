@@ -1,0 +1,19 @@
+/****** CONWAYS GAME OF LIFE STYLE ******/
+.cell {
+        width: 4px;
+        height: 4px;
+        border: 1px solid black;
+      }
+.filled {
+        background-color: black;
+      }
+.empty {
+        background-color: white;
+      }
+.field {
+	margin-left: auto;
+	margin-right: auto;
+	}
+button {
+	float: right;
+}
