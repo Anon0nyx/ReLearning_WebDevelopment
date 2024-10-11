@@ -1,23 +1,17 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Conway's game of life</title>
-    <style>
-      .cell {
-        width: 4px;
-        height: 4px;
-        border: 1px solid black;
-      }
-      .filled {
-        background-color: black;
-      }
-      .empty {
-        background-color: white;
-      }
-    </style>
-  </head>
-  <body>
-    <table id="field" style="border: 1px solid black"></table>
-    <script src="./game_of_life.js"></script>
-  </body>
+<html lang="en">
+  	<head>
+    		<meta charset="UTF-8">
+    		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    		<title>Better BOB</title>
+    		<!-- Home Brewed Scripts Imported Below -->
+    		<link rel="stylesheet" href="./game_style.css">
+
+  	</head>
+<body>
+    	<table id="field" style="border: 1px solid black"></table>
+	<script src="./game_of_life.js"></script>
+
+	<button type="button" onclick=random_seed()>Restart</button>
+</body>
 </html>
