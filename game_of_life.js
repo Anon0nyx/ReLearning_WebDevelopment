@@ -81,6 +81,6 @@ function init() {
         random_seed();
 
         draw();
-        setInterval(new_generation, 25);
+        setInterval(new_generation, 75);
 }
 init();
