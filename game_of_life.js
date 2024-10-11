@@ -62,7 +62,7 @@ function new_generation() {
         draw();
 }
 
-function randomSeed() {
+function random_seed() {
 	for (var i = 0; i < Math.floor(size * size * 0.3); i++) {
                 var x, y;
                 do {
@@ -78,9 +78,9 @@ function randomSeed() {
 function init() {
         create_field();
 
-        randomSeed();
+        random_seed();
 
         draw();
-        setInterval(new_generation, 50);
+        setInterval(new_generation, 25);
 }
 init();
