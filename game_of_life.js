@@ -1,86 +1,163 @@
-var size = 90;
-var htmlElements;
-var cells;
-var EMPTY = 0;
-var ALIVE = 1;
+function initialiseGrid(w, h) {
+	var x, y, result = [];
 
-function create_field() {
-        htmlElements = [];
-        cells = [];
-        var table = document.getElementById('field');
-        for (var y = 0; y < size; y++) {
-                var tr = document.createElement('tr');
-                var tdElements = [];
-                cells.push(new Array(size).fill(EMPTY));
-                htmlElements.push(tdElements);
-                table.appendChild(tr);
-                for (var x = 0; x < size; x++) {
-                        var td = document.createElement('td');
-                        tdElements.push(td);
-                        tr.appendChild(td);
-                }
-        }
+	for (x = 0; x < w; x += 1) {
+		result[x] = [];
+	}
+	return result;
 }
 
-function draw() {
-        for (var y = 0; y < size; y++) {
-                for (var x = 0; x < size; x++) {
-                        htmlElements[y][x].setAttribute('class', 'cell ' + (cells[y][x] == 1 ? 'filled' : 'empty'));
-                }
-        }
+function GameOfLife(w, h) {
+	var width = w,
+	height = h,
+	world = initialiseGrid(w, h),
+	newWorld = initialiseGrid(w, h),
+	interval,
+	iterations = 0,
+	onStepCallback,
+	onCellPopulatedCallback,
+	onCellKilledCallback,
+	generation = 0;
+
+	this.populateCell = function populateCell (x, y) {
+		if (x >= width || y >= height) {
+			throw {
+				name : 'OutOfBoundsError',
+				message : 'There is no such position in the world as [' + x + ',' + y + ']'
+			}
+		}
+		world[x][y] = true;
+
+		if (onCellPopulatedCallback) {
+			onCellPopulatedCallback(x, y);
+		}
+	};
+
+	this.populateCells = function populateCells (coordinateArray) {
+		var i;
+		for (i = 0; i < coordinateArray.length; i++) {
+			this.populateCell(coordinateArray[i][0], coordinateArray[i][1]);
+		}
+	};
+
+	this.toggleCell = function (x, y) {
+		if (x >= width || y >= height) {
+			throw {
+				name : 'OutOfBoundsError',
+				message : 'There is no such position in the world as [' + x + ',' + y + ']'
+			}
+		}
+		if (isLiving(x, y)) {
+			world[x][y] = false;
+			if (onCellKilledCallback) {
+				onCellKilledCallback(x, y);
+			}
+		} else {
+			populateCell(x, y);
+		}
+	};
+
+	this.isLiving = function isLiving(x, y) {
+		return world[x] && world[x][y];
+	}
+
+	function numberOfLivingNeighbours(x, y) {
+		var cx,
+		cy,
+		livingNeighbours = 0;
+
+		for (cx = x - 1; cx <= x + 1; cx += 1) {
+			for (cy = y - 1; cy <= y + 1; cy += 1) {
+				if ((cx !== x || cy !== y) && isLiving(cx, cy)) {
+					livingNeighbours += 1;
+				}
+			}
+		}
+
+		return livingNeighbours;
+	}
+
+	this.step = function step() {
+		var cx, cy, livingNeighbours;
+
+		newWorld = initialiseGrid(width, height);
+
+		generation += 1;
+
+		for (cx = 0; cx < w; cx += 1) {
+			for (cy = 0; cy < h; cy += 1) {
+				livingNeighbours = numberOfLivingNeighbours(cx, cy);
+				
+				if (livingNeighbours < 2) {
+					// Any live cell with fewer than two live neighbours dies, as if caused by under-population
+					newWorld[cx][cy] = false;
+				} else if (isLiving(cx, cy) && (livingNeighbours === 2 || livingNeighbours === 3)) {
+					// Any live cell with two or three live neighbours lives on to the next generation.
+					newWorld[cx][cy] = true;
+				} else if (livingNeighbours > 3 && isLiving(cx, cy)) {
+					// Any live cell with more than three live neighbours dies, as if by overcrowding
+					newWorld[cx][cy] = false;
+				} else if (!isLiving(cx, cy) && livingNeighbours === 3) {
+					// Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction
+					newWorld[cx][cy] = true;
+				}
+			}
+		}
+		world = newWorld;
+
+		if (onStepCallback) {
+			onStepCallback();
+		}
+
+		if (iterations > 0) {
+			iterations -= 1;
+		}
+
+		if (iterations > 0 || iterations === -1) {
+			if (interval > 0) {
+				setTimeout(step, interval);
+			} else {
+				step();
+			}
+		}
+	}
+
+	this.onStep = function(callback) {
+		onStepCallback = callback;
+	};
+
+	this.onCellPopulated = function(callback) {
+		onCellPopulatedCallback = callback;
+	};
+
+	this.onCellKilled = function(callback) {
+		onCellKilledCallback = callback;
+	};
+
+	this.get_world = function () {
+		return world;
+	};
+
+	this.get_width = function () {
+		return width;
+	};
+
+	this.get_height = function () {
+		return height;
+	};
+
+	this.get_generation = function () {
+		return generation;
+	};
+
+	this.start = function (iv, it) {
+		interval = iv || 0;
+		iterations = it;
+
+		generation = 0;
+
+		step();
+	};
+
+	return this;
 }
-
-function count_neighbours(x, y) {
-        var count = 0;
-        for (dy = -1; dy <= 1; dy++) {
-                for (dx = -1; dx <= 1; dx++) {
-                        var nx = (x + dx + size) % size,
-                                ny = (y + dy + size) % size;
-                        count = count + cells[ny][nx];
-                }
-        }
-        return count - cells[y][x];
-}
-
-function new_generation() {
-        var newCells = [];
-        for (var i = 0; i < size; i++) {
-                newCells.push(new Array(size).fill(EMPTY));
-        }
-        for (var y = 0; y < size; y++) {
-                for (var x = 0; x < size; x++) {
-                        var neighbours = count_neighbours(x, y);
-                        if (cells[y][x] == EMPTY && neighbours == 3) {
-                                newCells[y][x] = ALIVE;
-                        }
-                        if (cells[y][x] == ALIVE && (neighbours == 2 || neighbours == 3)) {
-                                newCells[y][x] = ALIVE;
-                        }
-                }
-        }
-        cells = newCells;
-        draw();
-}
-
-function random_seed() {
-	for (var i = 0; i < Math.floor(size * size * 0.3); i++) {
-                var x, y;
-                do {
-                        x = Math.floor(Math.random() * size), y = Math.floor(Math.random() * size);
-                        if (cells[y][x] == EMPTY) {
-                                cells[y][x] = ALIVE;
-                                break;
-                        }
-                } while (true);
-        }
-}
-
-function init() {
-        create_field();
-
-        random_seed();
-
-        draw();
-        setInterval(new_generation, 75);
-}
-init();
